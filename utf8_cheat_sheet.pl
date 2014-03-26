@@ -193,10 +193,10 @@ say "--------------- functions tests";
 }
 
 
-say "--------------- latin test string";
+say "--------------- ASCII test string";
 
 # Первые 127 кодов в ASCII и UTF-8 совпадают
-$string = utf8_to_cp1251('Latin test string');
+$string = utf8_to_cp1251('ASCII test string');
 ok( utf8_to_cp1251($string) eq $string, "Первые 127 кодов в ASCII и UTF-8 совпадают" );
 
 
