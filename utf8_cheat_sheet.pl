@@ -86,10 +86,10 @@ is( sprintf( "%vd", $many_byte_chr_seq ), "400.127",
 }
 
 {
+    $one_byte_chr_seq = $many_byte_chr_seq;
+
     # Если сделать так, то данные будут восприниматься как бинарные
     use bytes; # or "require bytes; bytes::length()"
-
-    $one_byte_chr_seq = $many_byte_chr_seq;
 
     # Напечатаем набор байтов соответствующий строке.
     # Первым символ кодируется двумя байтам, т.к. > 127, а второй одним.
