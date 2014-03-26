@@ -82,7 +82,6 @@ is( sprintf( "%vd", $many_byte_chr_seq ), "400.127",
     "Строка содержит числовые коды символов Unicode: 400.127"
 );
 {
-    use utf8 ();
     ok( utf8::is_utf8($many_byte_chr_seq), 'Флаг установлен' );
 }
 
