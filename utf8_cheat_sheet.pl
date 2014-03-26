@@ -140,7 +140,6 @@ say "--------------- functions tests";
 # utf8::downgrade над данными, работает с результатом как с байтами (на уровне языка Си).
 # Соответственно если downgrade не возможен, выдаётся ошибка или warning - Wide character in ...
 {
-    use utf8 ();
     use Encode (qw/ encode /);
 
     $many_byte_chr_seq = chr(0x422).chr(0x435).chr(0x441).chr(0x442);
@@ -150,24 +149,47 @@ say "--------------- functions tests";
     );
     ok( utf8::is_utf8($many_byte_chr_seq), "И у нее установлен флаг" );
 
-    eval {
+    ok ! eval {
         utf8::downgrade($many_byte_chr_seq);
+	1;
     };
 
     ok( $@ =~ /^Wide character in subroutine entry.+/,
-        "Но снимать флаг для такой строки нельзя, потому что 'utf8::downgrade()' умеет работать только с байтовым представлением строки"
+        "Но снять флаг для такой строки нельзя, потому что 'utf8::downgrade()' пытается сконвертировать строку в формат 'без utf8 флага', а в ней не может быть символов > 255"
     );
 
     $one_byte_chr_seq = encode( 'UTF-8', $many_byte_chr_seq );
     is( sprintf( "%vd", $one_byte_chr_seq ), "208.162.208.181.209.129.209.130",
-        "Но если мы работаем с функцией которая умеет работать только с байтами, можно закодировать строку"
+        "Но если мы работаем с функцией которая умеет работать только с байтами, можно закодировать строку в нужной нам кодировке"
     );
 
-    eval {
-        utf8::downgrade($one_byte_chr_seq);
-    };
+    ok ! utf8::is_utf8($one_byte_chr_seq), "обычно в таком случае и флаг установлен не будет";
 
-    ok( ! $@, "И тогда функция прежде чем работать с такими данными обязательно снимет флаг" );
+    ok eval {
+        utf8::downgrade($one_byte_chr_seq);
+        1;
+    };
+    ok( ! $@, "И тогда функция прежде чем работать с такими данными обязательно снимет флаг, если он есть и ничего не будет делать если его нет" );
+
+    my $accidently_upgraded_binary_data = $one_byte_chr_seq;
+    ok ! utf8::is_utf8($accidently_upgraded_binary_data);
+    {
+        use utf8;
+        $accidently_upgraded_binary_data .= "=DELIMITER=Привет";
+    }
+
+    ($accidently_upgraded_binary_data, undef) = split( '=DELIMITER=', $accidently_upgraded_binary_data);
+
+
+    ok utf8::is_utf8($accidently_upgraded_binary_data), "Конкатенация строк перевела наши данные в upgraded вид (utf8 с флагом)";
+    ok $accidently_upgraded_binary_data eq $one_byte_chr_seq, "Но сами они не изменились, логически";
+
+    ok eval {
+        utf8::downgrade($accidently_upgraded_binary_data);
+        1;
+    };
+    ok( ! $@, "Функция, прежде чем работать с такими данными успешно снимет флаг" );
+    ok !utf8::is_utf8($accidently_upgraded_binary_data)
 }
 
 
