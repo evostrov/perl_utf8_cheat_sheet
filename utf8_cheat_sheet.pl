@@ -213,7 +213,7 @@ $string = 'test';
     $string_u = decode( "UTF-8", encode( "UTF-8", $string ) );
 }
 ok( utf8::is_utf8($string_u),
-    "Установим флаг через encode decode для строки 'test'"
+    "Установим флаг через encode decode для строки 'test'. decode() мог бы этого не делать конкретно для ASCII символов, но ему лень проверить что все символы - ASCII"
 );
 
 # Установим флаг для ASCII строки через split
